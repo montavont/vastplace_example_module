@@ -37,65 +37,36 @@ class csv_parser:
 		fs = GridFS(file_db)
 		traceFile = fs.get(ObjectId(self.fileId))
 
-		#Copy the original db file
-		outPath = '/tmp/mongo_tmpfile_' + self.fileId
-		outF = open(outPath, 'w')
 		line = traceFile.readline()
 		while len(line) > 0:
-			outF.write(line)
-			line = traceFile.readline()
-		outF.close()
-
-		fIn = open(outPath)
-		line = fIn.readline()
-		lastGpsFix = (-1, -1)
-		while len(line) > 0:
-			data = line.rstrip('\n').split(',')
-			if len(data) >= 2:
-				date_data, lat, lon, value  = data
+			data = line.rstrip('\n').split('\t')
+			if len(data) >= 1:
+                            if data[1] == "GPS":
+				timestamp, _, lat, lon = data
 				lat = float(lat)
 				lon = float(lon)
-				value = float(value)
 
-				ts_str = date_data[:-6]
-				tz = date_data[-6:]
-
-				dt = datetime.strptime(ts_str[:26], '%Y-%m-%dT%H:%M:%S.%f')
-				timestamp =float(dt.strftime('%s'))
-
-				#Use timezone information to convert back to UTC (+00:00)
-				if tz[0] == '+':
-					offsetSign = -1
-				else:
-					offsetSign = 1
-				offset_hours, offset_minutes = tz[1:].split(':')
-				offset_hours = int(offset_hours)
-				offset_minutes = int(offset_minutes)
-
-				timestamp += offsetSign * (offset_hours * 3600 + offset_minutes * 60)
-
-				if (lat, lon) != lastGpsFix:
-					retval.append({
-        				                "sourceId":ObjectId(self.fileId),
-       			        	                "sensorName" : "example_module",
-                       				        "sensorID" : "example_module",
-							"vTimestamp" : timestamp,
-	                               			"tstype" : "epoch",
-        		        	        	"sensorType" : "GPS",
-	       	        		                "sensorValue" : (lat, lon)
+				retval.append({
+       				                "sourceId":ObjectId(self.fileId),
+     		        	                "sensorName" : "example_module",
+                 				"sensorID" : "example_module",
+						"vTimestamp" : int(timestamp),
+                               			"tstype" : "epoch",
+        		        	        "sensorType" : "GPS",
+	       	        		        "sensorValue" : (lat, lon)
 		                       	})
-					lastGpsFix = (lat, lon)
-
+                            elif data[1] == "metal":
+				timestamp, _, value = data
 				retval.append({
         			                "sourceId":ObjectId(self.fileId),
        		        	                "sensorName" : "example_module",
                        			        "sensorID" : "example_module",
-						"vTimestamp" : timestamp,
+						"vTimestamp" : int(timestamp),
 	                               		"tstype" : "epoch",
-        		        	        "sensorType" : "PM2.5",
-       	        		                "sensorValue" : value
+        		        	        "sensorType" : "metal",
+       	        		                "sensorValue" : float(value)
 	                       	})
 
-			line = fIn.readline()
+		        line = traceFile.readline()
 
 		return retval

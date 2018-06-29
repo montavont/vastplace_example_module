@@ -36,7 +36,7 @@ vim centraldb/urls.py
 
 and add
 <pre>
-url(r'^example_module/', include('experiments.vastplace_example_module.urls')),
+url(r'^vastplace_example_module/', include('experiments.vastplace_example_module.urls')),
 </pre>
 
 to the *urlpatterns* entry.
@@ -45,10 +45,12 @@ the example module should now be enabled.
 
 ## Uploading a trace
 
-This module parses csv traces with the following format :
+This module parses csv traces with the following format, and separated by tabs.
+the metal entries emulate an hypothetic sensor.
 
 ```
-YYYY-MM-DDTHH:mm:ss.mmm+00:00,<latitude>,<longitude>,<pm2.5 measurement>
+timestamp	GPS	latitude	longitude
+timestamp	metal	value
 ```
 
 Navigate to the following url, and use the trace upload form.
@@ -57,7 +59,7 @@ Navigate to the following url, and use the trace upload form.
 </pre>
 
 Once the trace uploaded, you are prompted with the detail filling form. You must pick the *vastplace_example* format. Once saved, a map will be plotted.
-Adding a word starting with '#' in the description will also tag this trace as part of the campaign named by this word.
+you can then navigate to the *Example* tab for a short description of the features of the platform
 
 ## Features
 
